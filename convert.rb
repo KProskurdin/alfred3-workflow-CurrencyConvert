@@ -1,6 +1,7 @@
 require 'net/http'
 require 'uri'
 require 'json'
+require_relative 'functions'
 
 hasARGV = false
 
@@ -49,30 +50,34 @@ if hasARGV
             if units.include?(cy)
                 units.delete(cy)
             end
-            uri = URI("https://exchangeratesapi.io/api/latest?base=#{cy}&symbols=#{units.join(',')}")
-            result = JSON.parse(Net::HTTP.get(uri))
-            result['rates'].each do |key, value|
-                temp = Hash[
-                    "title" => "#{(num.to_f*value).round(2)} #{key}",
-                    "subtitle" => "#{cy} : #{key} = 1 : #{value.round(4)} (Last Update: #{result["date"]})",
-                    "icon" => Hash[
-                        "path" => "flags/#{key}.png"
-                    ],
-                    "arg" => "#{(num.to_f*value).round(2)}"
-                ]
-                output["items"].push(temp)
+            units.each do |x|
+                uri = URI("https://free.currencyconverterapi.com/api/v5/convert?q=#{cy}_#{x}")
+                result = getURI(uri, "#{cy}_#{x}", 3600)
+
+                result["results"].each do |key, value|
+                    temp = Hash[
+                        "title" => "#{(num.to_f*value['val']).round(2)} #{value['to']}",
+                        "subtitle" => "#{cy} : #{value['to']} = 1 : #{value['val'].round(4)}",
+                        "icon" => Hash[
+                            "path" => "flags/#{value['to']}.png"
+                        ],
+                        "arg" => "#{value['val'].round(4)}"
+                    ]
+                    output["items"].push(temp)
+                end
             end
         else
-            uri = URI("https://exchangeratesapi.io/api/latest?base=#{cy}&symbols=#{target}")
-            result = JSON.parse(Net::HTTP.get(uri))
-            result['rates'].each do |key, value|
+            uri = URI("https://free.currencyconverterapi.com/api/v5/convert?q=#{cy}_#{target}")
+            result = getURI(uri, "#{cy}_#{target}", 3600)
+
+            result['results'].each do |key, value|
                 temp = Hash[
-                    "title" => "#{(num.to_f*value).round(2)} #{key}",
-                    "subtitle" => "#{cy} : #{key} = 1 : #{value.round(4)} (Last Update: #{result["date"]})",
+                    "title" => "#{(num.to_f*value['val']).round(2)} #{value['to']}",
+                    "subtitle" => "#{cy} : #{value['to']} = 1 : #{value['val'].round(4)}",
                     "icon" => Hash[
-                        "path" => "flags/#{key}.png"
+                        "path" => "flags/#{value['to']}.png"
                     ],
-                    "arg" => "#{(num.to_f*value).round(2)}"
+                    "arg" => "#{(num.to_f*value['val']).round(2)}"
                 ]
                 output["items"].push(temp)
             end
@@ -82,18 +87,21 @@ else
     if units.include?(base)
         units.delete(base)
     end
-    uri = URI("https://exchangeratesapi.io/api/latest?base=#{base}&symbols=#{units.join(',')}")
-    result = JSON.parse(Net::HTTP.get(uri))
-    result['rates'].each do |key, value|
-        temp = Hash[
-            "title" => "#{base} : #{key} = 1 : #{value.round(4)} ",
-            "subtitle" => "Last Update: #{result["date"]}",
-            "icon" => Hash[
-                "path" => "flags/#{key}.png"
-            ],
-            "arg" => "#{value.round(4)}"
-        ]
-        output["items"].push(temp)
+
+    units.each do |x|
+        uri = URI("https://free.currencyconverterapi.com/api/v5/convert?q=#{base}_#{x}")
+        result = getURI(uri, "#{base}_#{x}", 3600)
+
+        result["results"].each do |key, value|
+            temp = Hash[
+                "title" => "#{base} : #{value['to']} = 1 : #{value['val'].round(4)} ",
+                "icon" => Hash[
+                    "path" => "flags/#{value['to']}.png"
+                ],
+                "arg" => "#{value['val'].round(4)}"
+            ]
+            output["items"].push(temp)
+        end
     end
 end
 

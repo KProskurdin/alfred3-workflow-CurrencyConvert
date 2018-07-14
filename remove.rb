@@ -1,24 +1,27 @@
 require 'net/http'
 require 'uri'
 require 'json'
+require_relative 'functions'
 
 output = Hash["items" => []]
 data = JSON.parse(File.read('data.json'))
 base = data['base']
 units = data['units']
 
-uri = URI("https://exchangeratesapi.io/api/latest?base=#{base}&symbols=#{units.join(',')}")
-result = JSON.parse(Net::HTTP.get(uri))
-result['rates'].each do |key, value|
-    temp = Hash[
-        "title" => "#{key}",
-        "subtitle" => "#{base} : #{key} = 1 : #{value.round(4)} (Last Update: #{result["date"]})",
-        "icon" => Hash[
-            "path" => "flags/#{key}.png"
-        ],
-        "arg" => "#{key}"
-    ]
-    output["items"].push(temp)
+result = getURI("https://free.currencyconverterapi.com/api/v5/currencies", "currencies")
+
+result['results'].each do |key, value|
+    if units.include?(key)
+        temp = Hash[
+            "title" => "#{value['currencyName']}",
+            "subtitle" => "#{key} #{value['currencySymbol']}",
+            "icon" => Hash[
+                "path" => "flags/#{key}.png"
+            ],
+            "arg" => "#{key}"
+        ]
+        output["items"].push(temp)
+    end
 end
 
 print output.to_json
