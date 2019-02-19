@@ -7,8 +7,9 @@ output = Hash["items" => []]
 data = JSON.parse(File.read('data.json'))
 base = data['base']
 units = data['units']
+apikey = data['apiKey']
 
-result = getURI("https://free.currencyconverterapi.com/api/v5/currencies", "currencies")
+result = getURI("https://free.currencyconverterapi.com/api/v6/currencies?apiKey=#{apikey}", "currencies")
 
 result['results'].each do |key, value|
     temp = Hash[

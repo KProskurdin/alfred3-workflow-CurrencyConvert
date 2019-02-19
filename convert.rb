@@ -13,6 +13,7 @@ output = Hash["items" => []]
 data = JSON.parse(File.read('data.json'))
 base = data['base']
 units = data['units']
+apikey = data['apiKey']
 
 if hasARGV
     str = ARGV[0].lstrip.gsub('$', 'usd').gsub('￥', 'cny').gsub('¥', 'jpy').gsub('£', 'gbp').gsub('€', 'eur')
@@ -51,7 +52,7 @@ if hasARGV
                 units.delete(cy)
             end
             units.each do |x|
-                uri = URI("https://free.currencyconverterapi.com/api/v5/convert?q=#{cy}_#{x}")
+                uri = URI("https://free.currencyconverterapi.com/api/v6/convert?q=#{cy}_#{x}&apiKey=#{apikey}")
                 result = getURI(uri, "#{cy}_#{x}", 3600)
 
                 result["results"].each do |key, value|
@@ -67,7 +68,7 @@ if hasARGV
                 end
             end
         else
-            uri = URI("https://free.currencyconverterapi.com/api/v5/convert?q=#{cy}_#{target}")
+            uri = URI("https://free.currencyconverterapi.com/api/v5/convert?q=#{cy}_#{target}&apiKey=#{apikey}")
             result = getURI(uri, "#{cy}_#{target}", 3600)
 
             result['results'].each do |key, value|
@@ -89,7 +90,7 @@ else
     end
 
     units.each do |x|
-        uri = URI("https://free.currencyconverterapi.com/api/v5/convert?q=#{base}_#{x}")
+        uri = URI("https://free.currencyconverterapi.com/api/v5/convert?q=#{base}_#{x}&apiKey=#{apikey}")
         result = getURI(uri, "#{base}_#{x}", 3600)
 
         result["results"].each do |key, value|
